@@ -305,12 +305,15 @@ print_stackframe(void) {
 	uint32_t ebp = read_ebp();
 	uint32_t eip = read_eip();
 
-	for (int i = 0; i <= STACKFRAME_DEPTH)
+	int i = 0;
+	for (i = 0; i <= STACKFRAME_DEPTH; i ++)
 	{
-		cprintf("ebp: %d eip: %d args: ", ebp, eip );
-		int args[4];
-		for (int j = 0; j < 4; j ++)
+		cprintf("ebp:0x%08x eip: 0x%08x args: ", ebp, eip );
+		int args[4], j;
+		for (j = 0; j < 4; j ++)
 			args[j] = *((uint32_t *) ebp + 2 + j);
+		for (j = 0; j < 4; j ++)
+				cprintf("0x%08x ", args[j]);
 		cprintf("\n");
 		print_debuginfo(eip - 1);
 		eip = *((uint32_t *) ebp + 1);
