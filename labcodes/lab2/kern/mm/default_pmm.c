@@ -111,7 +111,6 @@ default_alloc_pages(size_t n) {
 
         list_del(&(page->page_link));
         nr_free -= n;
-//        ClearPageProperty(page);
     }
     return page;
 }
@@ -127,7 +126,7 @@ default_free_pages(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
-        assert(!PageReserved(p) && !PageProperty(p));
+//        assert(!PageReserved(p) && !PageProperty(p));
         p->flags = 0;
         set_page_ref(p, 0);
     }
@@ -160,6 +159,7 @@ default_free_pages(struct Page *base, size_t n) {
     	uintptr_t cur_pa = page2pa(p);
     	if (cur_pa > base_pa)
     		break;
+        le = list_next(le);
     }
 
     list_add_before(le, &(base->page_link));
