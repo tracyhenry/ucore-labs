@@ -386,11 +386,11 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     	if (! create || (pt_page = alloc_page()) == NULL)
     		return NULL;
     	uintptr_t pt_pa = page2pa(pt_page);
-    	*pdep = pt_pa | PTE_P | PTE_W;
+    	*pdep = pt_pa | PTE_P | PTE_W | PTE_U;
     	set_page_ref(pt_page, 1);
-    	memset(&(KADDR(pt_pa)), 0, PGSIZE);
+    	memset(KADDR(pt_pa), 0, PGSIZE);
     }
-    return (pte_t *) (KADDR(PDE_ADDR(*pdep)) + PTX(la));
+    return (pte_t *) KADDR(PDE_ADDR(*pdep)) + PTX(la);
 }
 
 //get_page - get related Page struct for linear address la using PDT pgdir
