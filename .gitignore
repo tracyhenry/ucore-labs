@@ -12,6 +12,7 @@ tags
 *.bak
 *.org
 .codelite
+.settings
 *.project
 *.workspace
 a.out
