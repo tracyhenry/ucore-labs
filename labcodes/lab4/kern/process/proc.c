@@ -108,7 +108,7 @@ alloc_proc(void) {
     	proc->kstack = 0;
     	proc->need_resched = 0;
     	proc->mm = NULL;
-    	proc->context = context();
+    	memset(&(proc->context), 0, sizeof(&(proc->context)));
     	proc->tf = NULL;
     	proc->cr3 = boot_cr3;
     	proc->flags = 0;
