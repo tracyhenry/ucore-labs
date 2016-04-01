@@ -91,7 +91,7 @@ swap_out(struct mm_struct *mm, int n, int in_tick)
           if (r != 0) {
                     cprintf("i %d, swap_out: call swap_out_victim failed\n",i);
                   break;
-          }
+          }          
           //assert(!PageReserved(page));
 
           //cprintf("SWAP: choose victim page 0x%08x\n", page);

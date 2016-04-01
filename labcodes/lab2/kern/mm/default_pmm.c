@@ -7,9 +7,9 @@
    on receiving a request for memory, scans along the list for the first block that is large enough to
    satisfy the request. If the chosen block is significantly larger than that requested, then it is 
    usually split, and the remainder added to the list as another free block.
-   Please see Page 196~198, Section 8.2 of Yan Wei Ming's chinese book "Data Structure -- C programming language"
+   Please see Page 196~198, Section 8.2 of Yan Wei Min's chinese book "Data Structure -- C programming language"
 */
-// LAB2 EXERCISE 1: 2011011244
+// LAB2 EXERCISE 1: YOUR CODE
 // you should rewrite functions: default_init,default_init_memmap,default_alloc_pages, default_free_pages.
 /*
  * Details of FFMA
@@ -31,7 +31,7 @@
  *                  p->ref should be 0, because now p is free and no reference.
  *                  We can use p->page_link to link this page to free_list, (such as: list_add_before(&free_list, &(p->page_link)); )
  *              Finally, we should sum the number of free mem block: nr_free+=n
- * (4) default_alloc_pages: search find a first free block (block size >=n) in free list and resize the free block, return the addr
+ * (4) default_alloc_pages: search find a first free block (block size >=n) in free list and reszie the free block, return the addr
  *              of malloced block.
  *              (4.1) So you should search freelist like this:
  *                       list_entry_t le = &free_list;
@@ -71,13 +71,13 @@ default_init_memmap(struct Page *base, size_t n) {
     struct Page *p = base;
     for (; p != base + n; p ++) {
         assert(PageReserved(p));
-        SetPageProperty(p);
-        p->property = 0;
+        p->flags = p->property = 0;
         set_page_ref(p, 0);
     }
     base->property = n;
+    SetPageProperty(base);
     nr_free += n;
-    list_add_before(&free_list, &(base->page_link));
+    list_add(&free_list, &(base->page_link));
 }
 
 static struct Page *
@@ -95,45 +95,30 @@ default_alloc_pages(size_t n) {
             break;
         }
     }
-
     if (page != NULL) {
+        list_del(&(page->page_link));
         if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;
-            list_add(&(page->page_link), &(p->page_link));
-        }
-
-        struct Page *tmp = page;
-        for (; tmp != page + n; tmp ++){
-        	ClearPageProperty(tmp);
-        	SetPageReserved(tmp);
-        }
-
-        list_del(&(page->page_link));
+            list_add(&free_list, &(p->page_link));
+    }
         nr_free -= n;
+        ClearPageProperty(page);
     }
     return page;
 }
-
-/*               (5.1) according the base addr of withdrawed blocks, search free list, find the correct position
- *                     (from low to high addr), and insert the pages. (may use list_next, le2page, list_add_before)
- *               (5.2) reset the fields of pages, such as p->ref, p->flags (PageProperty)
- *               (5.3) try to merge low addr or high addr blocks. Notice: should change some pages's p->property correctly.
- */
 
 static void
 default_free_pages(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
-//        assert(!PageReserved(p) && !PageProperty(p));
+        assert(!PageReserved(p) && !PageProperty(p));
         p->flags = 0;
         set_page_ref(p, 0);
     }
     base->property = n;
     SetPageProperty(base);
-
-    //merge
     list_entry_t *le = list_next(&free_list);
     while (le != &free_list) {
         p = le2page(le, page_link);
@@ -150,20 +135,8 @@ default_free_pages(struct Page *base, size_t n) {
             list_del(&(p->page_link));
         }
     }
-
-    //use page2pa to find the correct position
-    uintptr_t base_pa = page2pa(base);
-    le = list_next(&free_list);
-    while (le != &free_list) {
-    	p = le2page(le, page_link);
-    	uintptr_t cur_pa = page2pa(p);
-    	if (cur_pa > base_pa)
-    		break;
-        le = list_next(le);
-    }
-
-    list_add_before(le, &(base->page_link));
     nr_free += n;
+    list_add(&free_list, &(base->page_link));
 }
 
 static size_t
